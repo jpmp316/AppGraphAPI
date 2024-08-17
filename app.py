@@ -18,18 +18,36 @@ def form():
 def submit():
     name = request.form['name']
     message = request.form['message']
-    payload = {
-        'message': f"{name}\n\n{message}",
-        'access_token':'EAAR4ZCnOHpb0BO6gbbopGV8uPnsUEpXM85zti9H5uFSW1UKG1uFJwyMfkfbZB9Q5T2YF316IXH5JbFwy7altN8KikzRQmn4vrg4e0aagNf9JNdcb2cjJDqBKDgyM4oHaFRBSfCXjfVXDAxCeMolHgRGrRZAZCZBf8ZAgSbpWipfk7vcYRbctMARjJfKt18OniEiT1vOIJ1snkaocKhArvBo1Kz',
-        'published': True  # Este parámetro asegura que la publicación sea visible públicamente
-        
-    }
-   
+    image = request.files['image']
     page_id = "363272963543755"
-    url = f"https://graph.facebook.com/v20.0/{page_id}/feed"
+    access_token = 'EAAR4ZCnOHpb0BOyZARQXYlict6HMnOqiX2jLrD3BYz9rGqO6ZB2BjkEhByBbnmGeTlcfF4gTxMS6Iz9KKccwLTiC6M3qKc9TcO5qMUccFGx6DRUlBbJmvYiskAGvD9K5mrDBHrS5PzSKIF4n1EjD16yajMqTSc3MWFVOEJZBZCgUAtF9yKZC1BMpNEpssNe2ezNICS76Kf6gGhZAbq0dzqkZBDzI'
+    if image:
+        image_filename = image.filename
+        image.save(image_filename)  # Guarda la imagen temporalmente en el servidor
 
-    response = requests.post(url, data=payload)
+        # Ahora envía la imagen junto con el mensaje a la Graph API
+        payload = {
+            'message': f"{name}\n\n{message}",
+            'access_token': access_token,
+        }
+        img_file = open(image_filename, 'rb')
+        files = {
+            'source': (image_filename, img_file)
+        }
+            
+        url = f"https://graph.facebook.com/v20.0/{page_id}/photos"
+        response = requests.post(url, data=payload, files=files)
+        img_file.close()  # Cierra el archivo después de la solicitud
 
+    else:
+        payload = {
+            'message': f"{name}\n\n{message}",
+            'access_token':access_token,
+            
+        }
+        url = f"https://graph.facebook.com/v20.0/{page_id}/feed"
+        response = requests.post(url, data=payload)
+    
     if response.status_code == 200:
         return "Post published successfully!"
     else:
