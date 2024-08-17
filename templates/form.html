@@ -1,0 +1,21 @@
+<!-- templates/form.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+    <script src="{{ url_for('static', filename='js/validate.js') }}"></script>
+</head>
+<body>
+    <h1>Formulario de Ejemplo</h1>
+    <form id="exampleForm" action="/submit" method="post" enctype="multipart/form-data">
+        <label for="name">Titulo:</label>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="message">Mensaje:</label>
+        <textarea id="message" name="message"></textarea><br><br>
+        <input type="submit" value="Enviar">
+    </form>
+    
+</body>
+</html>
