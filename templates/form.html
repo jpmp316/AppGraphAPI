@@ -1,23 +1,35 @@
-<!-- templates/form.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
     <script src="{{ url_for('static', filename='js/validate.js') }}"></script>
+
 </head>
-<body>
-    <h1>Formulario de Ejemplo</h1>
-    <form id="exampleForm" action="/submit" method="post" enctype="multipart/form-data">
-        <label for="name">Titulo:</label>
-        <input type="text" id="name" name="name"><br><br>
-        <label for="message">Mensaje:</label>
-        <textarea id="message" name="message"></textarea><br><br>
-        <label for="image">Upload Image:</label>
-        <input type="file" id="image" name="image"><br><br>
-        <input type="submit" value="Enviar">
+<body> <br>
+    <h1>Uso de Graph API para realizar posts en Facebook</h1>
+    <form id="exampleForm" action="/api/posts" method="post" enctype="multipart/form-data">
+        <div class="group">
+            <label for="name">Título:</label>
+            <input type="text" id="name" name="name" placeholder="Introduce el título">
+        </div>
+        <div class="group">
+            <label for="message">Mensaje:</label>
+            <textarea id="message" class="form-control"  name="message" placeholder="Escribe tu mensaje"></textarea>
+        </div>
+        <div class="group">
+            <label for="image">Imagen (opcional):</label>
+            <input type="file" name="image" id="image">
+        </div>
+        <div class="group">
+            <label for="datetime">Opciones de programación (Opcional)</label>
+            <input type="datetime-local" name="datetime" id="datetime">
+        </div>
+        <div class="group">
+            <input type="submit" value="Enviar">
+        </div>
     </form>
-    
 </body>
 </html>
