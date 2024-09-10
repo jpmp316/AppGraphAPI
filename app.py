@@ -1,51 +1,43 @@
 import requests
 import datetime
 import json
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify, render_template
+
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
-    return '¡Hola, Mundo!'
+def index():
+    return render_template('form.html')
 
 @app.route('/about')
 def about():
     return 'Acerca de mí'
 
-@app.route('/form')
-def form():
-    return render_template('form.html')
-
 @app.route('/api/posts', methods=['POST'])
 def submit():
-    name = request.form['name']
-    message = request.form['message']
-    image = request.files['image']
-    fecha = request.form['datetime']
+    data = request.get_json()
+    name = data.get('name')
+    message = data.get('message')
+    image_url = data.get('image_url')
+    fecha = data.get('datetime')
     page_id = "115199898165986"
     access_token = 'EAALCMus5D6gBO9GKZCtoZA7wC7SwaQZBI5FTh3ZCjC0TDmNJr1KfF4WW5K6r2eFrZBFxguNmfJIJE2NT9qF2SsOyoDHDmZC2dbxuIWAY9TYaENZBYAzlCZCZAyNIEvTbS5VC98Lhyxcexqq4EenJDWdG3MLxjr1K5ajpZBoOqA4H7BZA8vayjCSCDeOlnkJSf7f8pkZD'
-    
+
     if fecha:
         # Convertir la fecha a un timestamp
         scheduled_time = int(datetime.datetime.strptime(fecha, "%Y-%m-%dT%H:%M").timestamp())
 
-        if image:
+        if image_url:
             # Subir la imagen a Facebook sin publicarla de inmediato
-            image_filename = image.filename
-            image.save(image_filename)
-            img_file = open(image_filename, 'rb')
             photo_payload = {
+                'url': image_url,
                 'published': 'false',
                 'access_token': access_token,
             }
-            files = {
-                'source': (image_filename, img_file)
-            }
-            photo_response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/photos", data=photo_payload, files=files)
-            img_file.close()
+            photo_response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/photos", data=photo_payload)
 
             if photo_response.status_code != 200:
-                return f"Error al subir la imagen: {photo_response.status_code}\n{photo_response.json()}"
+                return jsonify({"error": f"Error al subir la imagen: {photo_response.status_code}", "details": photo_response.json()}), photo_response.status_code
 
             # Obtener el ID de la imagen subida
             photo_id = photo_response.json().get('id')
@@ -60,7 +52,7 @@ def submit():
             }
             response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/feed", data=post_payload)
         else:
-            # Programar la publicación solo con el mensaje y titulo
+            # Programar la publicación solo con el mensaje y título
             post_payload = {
                 'message': f"{name}\n\n{message}",
                 'access_token': access_token,
@@ -70,25 +62,19 @@ def submit():
             response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/feed", data=post_payload)
 
         if response.status_code == 200:
-            return "Post programado con exito!"
+            return jsonify({"message": "Post programado con éxito!"})
         else:
-            return f"Error al programar post: {response.status_code}\n{response.json()}"
+            return jsonify({"error": f"Error al programar post: {response.status_code}", "details": response.json()}), response.status_code
 
     else:
-        if image:
+        if image_url:
             # Publicar inmediatamente con imagen
-            image_filename = image.filename
-            image.save(image_filename)
-            img_file = open(image_filename, 'rb')
             payload = {
+                'url': image_url,
                 'message': f"{name}\n\n{message}",
                 'access_token': access_token,
             }
-            files = {
-                'source': (image_filename, img_file)
-            }
-            response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/photos", data=payload, files=files)
-            img_file.close()
+            response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/photos", data=payload)
         else:
             # Publicar inmediatamente sin imagen
             payload = {
@@ -98,10 +84,9 @@ def submit():
             response = requests.post(f"https://graph.facebook.com/v20.0/{page_id}/feed", data=payload)
 
         if response.status_code == 200:
-            return "Post realizado correctamente"
+            return jsonify({"message": "Post realizado correctamente"})
         else:
-            return f"Failed to post: {response.status_code}\n{response.json()}"
-
+            return jsonify({"error": f"Failed to post: {response.status_code}", "details": response.json()}), response.status_code
 
 if __name__ == '__main__':
     app.run(debug=True)
