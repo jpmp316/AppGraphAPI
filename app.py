@@ -9,9 +9,7 @@ app = Flask(__name__)
 def index():
     return render_template('form.html')
 
-@app.route('/about')
-def about():
-    return 'Acerca de mí'
+
 
 @app.route('/api/posts', methods=['POST'])
 def submit():
