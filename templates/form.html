@@ -3,33 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
-    <script src="{{ url_for('static', filename='js/validate.js') }}"></script>
+    <title>Publicar en Facebook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
 
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0 15px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .error {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
 </head>
-<body> <br>
-    <h1>Uso de Graph API para realizar posts en Facebook</h1>
-    <form id="exampleForm" action="/api/posts" method="post" enctype="multipart/form-data">
-        <div class="group">
-            <label for="name">Título:</label>
-            <input type="text" id="name" name="name" placeholder="Introduce el título">
-        </div>
-        <div class="group">
-            <label for="message">Mensaje:</label>
-            <textarea id="message" class="form-control"  name="message" placeholder="Escribe tu mensaje"></textarea>
-        </div>
-        <div class="group">
-            <label for="image">Imagen (opcional):</label>
-            <input type="file" name="image" id="image">
-        </div>
-        <div class="group">
-            <label for="datetime">Opciones de programación (Opcional)</label>
-            <input type="datetime-local" name="datetime" id="datetime">
-        </div>
-        <div class="group">
-            <input type="submit" value="Enviar">
-        </div>
-    </form>
+<body>
+    <div class="container">
+        <h2>Publicar en Facebook</h2>
+        <form id="postForm">
+            <div class="form-group">
+                <label for="name">Título</label>
+                <input type="text" id="name" name="name" placeholder="Título del post" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Mensaje</label>
+                <textarea id="message" name="message" placeholder="Escribe tu mensaje..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="image_url">URL de la Imagen</label>
+                <input type="text" id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.jpg" required>
+            </div>
+            <div class="form-group">
+                <label for="datetime">Fecha y Hora de Publicación (opcional)</label>
+                <input type="datetime-local" id="datetime" name="datetime">
+            </div>
+            <button type="submit">Publicar</button>
+        </form>
+        <div id="responseMessage" class="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('postForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const message = document.getElementById('message').value;
+            const image_url = document.getElementById('image_url').value;
+            const datetime = document.getElementById('datetime').value;
+
+            const data = {
+                name: name,
+                message: message,
+                image_url: image_url,
+                datetime: datetime ? datetime : null
+            };
+
+            fetch('http://127.0.0.1:5000/api/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const responseMessage = document.getElementById('responseMessage');
+                if (data.message) {
+                    responseMessage.textContent = data.message;
+                    responseMessage.className = 'message success';
+                } else {
+                    responseMessage.textContent = data.error || 'Error desconocido';
+                    responseMessage.className = 'message error';
+                }
+                responseMessage.style.display = 'block';
+            })
+            .catch(error => {
+                const responseMessage = document.getElementById('responseMessage');
+                responseMessage.textContent = 'Error al realizar la petición';
+                responseMessage.className = 'message error';
+                responseMessage.style.display = 'block';
+            });
+        });
+    </script>
 </body>
 </html>
